@@ -1,9 +1,25 @@
 #!/usr/bin/env python3
 """
-Export the 2024 and 2023 parcel layers from the GeoPackage
-`data/Parcelas_madeira.gpkg` into an Excel workbook that lives in `data/`.
-The Excel file gets two sheets (Parcelas_2024, Parcelas_2023) and an extra
-column `geometry_wkt` with the geometry in WKT format.
+load_parcels.py
+===============
+
+Exports the 2024 and 2023 parcel layers from the GeoPackage `Parcelas_madeira.gpkg`
+into an Excel workbook located in the `data/` directory.
+
+Each layer is written to a separate sheet within the Excel file:
+  - Sheet: `Parcelas_2024` for layer `P_madeira_2024`
+  - Sheet: `Parcelas_2023` for layer `P_madeira_2023`
+
+The exported Excel sheets include all attribute columns and an extra column
+`geometry_wkt`, which contains the geometry in WKT format. The native geometry
+column is excluded to improve compatibility with Excel viewers.
+
+Input:
+  - GeoPackage: data/Parcelas_madeira.gpkg
+  - Layers: 'P_madeira_2024', 'P_madeira_2023'
+
+Output:
+  - Excel workbook: data/Parcelas_Madeira.xlsx
 """
 from pathlib import Path
 import geopandas as gpd
@@ -20,9 +36,26 @@ OUTPUT_XLS = DATA_DIR / "Parcelas_Madeira.xlsx"
 LAYER_2024 = "P_madeira_2024"
 LAYER_2023 = "P_madeira_2023"
 
-
 def main() -> None:
-    """Run the export."""
+    """
+    Export two parcel layers from a GeoPackage to an Excel file.
+
+    Process:
+      1. Read 2024 and 2023 parcel layers from the input GeoPackage.
+      2. Convert geometries to WKT strings for easier readability in Excel.
+      3. Drop the original geometry column to reduce Excel file size.
+      4. Write both datasets to separate sheets within a single Excel file.
+
+    Output:
+      Excel file with two sheets:
+        - 'Parcelas_2024'
+        - 'Parcelas_2023'
+      Each sheet includes a 'geometry_wkt' column.
+
+    Raises:
+      FileNotFoundError: If the input GeoPackage or layers are missing
+      ValueError: If writing to Excel fails
+    """
     # 1) Read parcel layers
     gdf_2024 = gpd.read_file(GPKG_PATH, layer=LAYER_2024)
     gdf_2023 = gpd.read_file(GPKG_PATH, layer=LAYER_2023)

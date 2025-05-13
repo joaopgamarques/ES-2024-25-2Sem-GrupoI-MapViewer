@@ -1,13 +1,28 @@
 #!/usr/bin/env python3
+"""
+load_properties.py
+==================
+
+Reads a semicolon-delimited CSV file containing WKT geometries,
+converts it to a GeoDataFrame, and writes the result to a PostGIS table.
+
+CSV Requirements:
+  - File path: ../data/Madeira-Moodle-1.2.csv
+  - Must use ';' as delimiter
+  - Include a column named 'geometry' with WKT strings
+  - Coordinates should be in EPSG:5016 (Portugal Mainland)
+
+Output:
+  - Table `properties_data` in PostGIS database (EPSG:4326)
+"""
 import pandas as pd
 import geopandas as gpd
 from shapely import wkt
 from sqlalchemy import create_engine
 
-
 def main():
     """
-    Main entry point for loading WKT geometries from a CSV into a PostGIS table.
+    Load geometries from CSV and write to PostGIS.
 
     Steps:
       1. Read a semicolon-delimited CSV file containing WKT geometry strings into a Pandas DataFrame.
@@ -17,7 +32,10 @@ def main():
       5. Connect to a Postgres database via SQLAlchemy.
       6. Write the GeoDataFrame to a PostGIS table, replacing any existing table.
 
-    :return: None
+    Raises:
+        FileNotFoundError: If the CSV path is incorrect or inaccessible
+        ValueError: If the geometry column cannot be parsed as WKT
+        sqlalchemy.exc.SQLAlchemyError: If the database connection or write fails
     """
     # Path to the CSV file containing data and WKT geometries
     csv_file_path = "../data/Madeira-Moodle-1.2.csv"
