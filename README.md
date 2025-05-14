@@ -1,4 +1,4 @@
-# Map From CSV Script
+# ES-Project-TerritoryManagement
 
 This Python script generates an interactive HTML map from a semicolon-delimited CSV file containing WKT geometries. It does **not** require a database—just local files and a standard Python environment.
 
@@ -43,3 +43,45 @@ This Python script generates an interactive HTML map from a semicolon-delimited 
    ```bash
    python3 -m venv venv
    source venv/bin/activate  # On Linux/Mac
+
+---
+
+## Testing and Coverage
+
+| Task | Command |
+|------|---------|
+| **Run all tests with detailed output** | ```bash<br>pytest -v<br>``` |
+| **Run tests + generate line & branch-coverage reports** | ```bash<br>pytest --cov=mapviewer --cov-branch \<br>&nbsp; &nbsp; --cov-report=term-missing \<br>&nbsp; &nbsp; --cov-report=xml \<br>&nbsp; &nbsp; --cov-report=html<br>``` |
+
+* **Terminal report** shows coverage percentages & missing lines.  
+* `coverage.xml` (Cobertura) feeds CI dashboards (GitHub Actions, GitLab CI, SonarQube, Codecov…).  
+* `htmlcov/index.html` is an interactive, per-file coverage dashboard (open in your browser).
+
+> **Tip&nbsp;** Add `--cov-fail-under=85` (or any percentage) to fail the run when coverage drops below that threshold.
+
+---
+
+## Group Identification
+
+**Group Name:** Group I
+
+**Members:**
+- **João Pedro Marques**
+    - Student Number: 105377
+    - GitHub Username: joaopgamarques
+- **José Mesquita**
+    - Student Number: 106281
+    - GitHub Username: jlgmaIscte
+- **Bárbara Albuquerque**
+    - Student Number: 106807
+    - GitHub Username: bfaae
+- **Jéssica Vieira**
+    - Student Number: 110812
+    - GitHub Username: Je-ssi-ca
+
+---
+
+## Authors
+
+Created and maintained by **ES-Project-TerritoryManagement Group I**.  
+Contributions are welcome via pull requests and issues.
