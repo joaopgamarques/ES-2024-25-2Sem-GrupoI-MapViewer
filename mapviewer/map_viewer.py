@@ -44,7 +44,7 @@ def main() -> None:
       3. Wrap in a GeoDataFrame with CRS EPSG:4326.
          (Uncomment the reprojection line if using EPSG:5016.)
       4. Initialize a Folium map centered on Madeira (lat 32.65, lon -16.9).
-      5. Overlay the parcels as GeoJSON with tooltips for OBJECTID and OWNER.
+      5. Overlay the parcels as GeoJSON with tooltips for *all* attributes.
       6. Save the interactive map to `map_properties.html`.
 
     Raises:
@@ -64,17 +64,18 @@ def main() -> None:
     # gdf = gdf.to_crs(epsg=4326)
 
     # 4) Build a Folium map centered on Madeira
-    m = folium.Map(location=[32.65, -16.9], zoom_start=12)
+    folium_map = folium.Map(location=[32.65, -16.9], zoom_start=12)
 
-    # 5) Add the GeoJSON layer with hover tooltips
+    # 5) Add the GeoJSON layer with hover tooltips for *all* attributes
+    all_fields = [column for column in gdf.columns if column != gdf.geometry.name]
     folium.GeoJson(
         gdf,
         name="Properties",
-        tooltip=folium.GeoJsonTooltip(fields=["OBJECTID", "OWNER"]),
-    ).add_to(m)
+        tooltip=folium.GeoJsonTooltip(fields=all_fields, aliases=all_fields),
+    ).add_to(folium_map)
 
     # 6) Save the map to an HTML file and notify
-    m.save(OUT_HTML)
+    folium_map.save(OUT_HTML)
     print(f"Interactive map saved to: {OUT_HTML}")
 
 
