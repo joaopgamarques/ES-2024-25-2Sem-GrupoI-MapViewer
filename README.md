@@ -1,87 +1,162 @@
-# ES-Project-TerritoryManagement
+# ES-Project: Python GIS & Mapping Utilities
 
-This Python script generates an interactive HTML map from a semicolon-delimited CSV file containing WKT geometries. It does **not** require a database—just local files and a standard Python environment.
+This directory contains **Python** scripts for working with geographic data in Madeira, performing tasks such as:
 
----
-
-## Features
-
-- **Reads** a CSV (`Madeira-Moodle-2.0.csv`) from the `data/` folder (assumed to be at `<project_root>/data`).
-- **Parses** WKT geometry strings (stored in a `geometry` column) into shapely objects.
-- **Builds** a GeoDataFrame (using GeoPandas) with an EPSG:4326 coordinate reference system.
-- **Generates** an interactive map using Folium, placing each geometry as a GeoJSON layer.
-- **Saves** the map to `map_properties.html` in the project root. Open it in your browser to explore.
+1. **GeoPackage → Excel** export (`load_parcels.py`)
+2. **CSV (WKT) → PostGIS** import (`load_properties.py`)
+3. **CSV (WKT) → Folium Map** generation (`map_viewer.py`)
+4. **Automated tests** for each script (using **pytest**)
 
 ---
 
-## Requirements
+## Table of Contents
 
-1. **Python 3.8+**  
-2. **Libraries** (install via `pip install [package]`):
-   - [pandas](https://pandas.pydata.org/)  
-   - [geopandas](https://geopandas.org/)  
-   - [folium](https://python-visualization.github.io/folium/)  
-   - [shapely](https://shapely.readthedocs.io/)  
+* [Overview](#overview)
+* [Scripts](#scripts)
 
-3. **CSV File**  
-   - Must be located at `<project_root>/data/Madeira-Moodle-2.0.csv`.
-   - Delimiter: `;` (semicolon).
-   - Columns:
-     - A **`geometry`** column containing valid WKT polygons or multipolygons.
-     - (Optionally) **`OBJECTID`**, **`OWNER`**, etc., which appear in tooltips.
-
-4. **Coordinate System**  
-   - If already in **EPSG:4326** (WGS-84 lat/lon), no reprojection is needed.
-   - If data is in **EPSG:5016**, uncomment the reprojection line in the script to convert to EPSG:4326.
+  * [1. `load_parcels.py`](#1-load_parcelspy)
+  * [2. `load_properties.py`](#2-load_propertiespy)
+  * [3. `map_viewer.py`](#3-map_viewerpy)
+* [Test Classes](#test-classes)
+* [Dependencies & Setup](#dependencies--setup)
+* [Running Tests & Coverage](#running-tests--coverage)
+* [Contributors](#contributors)
 
 ---
 
-## Installation & Setup
+## Overview
 
-1. **Clone** or download this repository.
-2. **Create a virtual environment** (optional but recommended):
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate  # On Linux/Mac
+These Python utilities complement the main project by performing geospatial data **transformations** and **visualisations**. They rely on:
 
----
-
-## Testing and Coverage
-
-| Task | Command |
-|------|---------|
-| **Run all tests with detailed output** | ```bash<br>pytest -v<br>``` |
-| **Run tests + generate line & branch-coverage reports** | ```bash<br>pytest --cov=mapviewer --cov-branch \<br>&nbsp; &nbsp; --cov-report=term-missing \<br>&nbsp; &nbsp; --cov-report=xml \<br>&nbsp; &nbsp; --cov-report=html<br>``` |
-
-* **Terminal report** shows coverage percentages & missing lines.  
-* `coverage.xml` (Cobertura) feeds CI dashboards (GitHub Actions, GitLab CI, SonarQube, Codecov…).  
-* `htmlcov/index.html` is an interactive, per-file coverage dashboard (open in your browser).
-
-> **Tip&nbsp;** Add `--cov-fail-under=85` (or any percentage) to fail the run when coverage drops below that threshold.
+* **GeoPandas** & **Shapely** – geometry handling and CRS transformations.
+* **Pandas** – tabular data I/O (CSV / Excel).
+* **Folium** – interactive HTML maps.
+* **SQLAlchemy** & **PostGIS** – database integration (optional).
 
 ---
 
-## Group Identification
+## Scripts
 
-**Group Name:** Group I
+### 1. `load_parcels.py`
 
-**Members:**
-- **João Pedro Marques**
-    - Student Number: 105377
-    - GitHub Username: joaopgamarques
-- **José Mesquita**
-    - Student Number: 106281
-    - GitHub Username: jlgmaIscte
-- **Bárbara Albuquerque**
-    - Student Number: 106807
-    - GitHub Username: bfaae
-- **Jéssica Vieira**
-    - Student Number: 110812
-    - GitHub Username: Je-ssi-ca
+**Objective:** Export 2024 / 2023 parcel layers from a local **GeoPackage** to an Excel workbook with separate sheets.
+
+**Workflow:**
+
+1. Read `Parcelas_madeira.gpkg` in `data/` (layers `P_madeira_2024` & `P_madeira_2023`).
+2. Convert geometries to **WKT** strings (`geometry_wkt`).
+3. Drop the binary geometry column to reduce file size.
+4. Write each layer to its own sheet in `Parcelas_Madeira.xlsx`.
+
+**Output:** `data/Parcelas_Madeira.xlsx` (sheets `Parcelas_2024` & `Parcelas_2023`).
 
 ---
 
-## Authors
+### 2. `load_properties.py`
 
-Created and maintained by **ES-Project-TerritoryManagement Group I**.  
-Contributions are welcome via pull requests and issues.
+**Objective:** Import a CSV containing WKT geometries into a **PostGIS** table.
+
+**Workflow:**
+
+1. Read `Madeira-Moodle-1.2.csv` (semicolon‑delimited).
+2. Parse the `geometry` column with `shapely.wkt.loads`.
+3. Build a `GeoDataFrame` (start in **EPSG 5016**, then reproject to **EPSG 4326**).
+4. Use `GeoDataFrame.to_postgis()` to write to table `properties_data` (replace or append).
+
+**Output:** PostGIS table **`properties_data`**.
+
+---
+
+### 3. `map_viewer.py`
+
+**Objective:** Generate an **interactive Folium map** from a CSV that stores WKT polygons/points.
+
+**Workflow:**
+
+1. Read `Madeira-Moodle-2.0.csv` in `data/`.
+2. Convert to a `GeoDataFrame` in **EPSG 4326**.
+3. Create a Folium map centred on Madeira and add a GeoJSON layer with tool‑tips.
+4. Save as `map_properties.html` in the project root.
+
+**Output:** `map_properties.html` – open in any browser.
+
+---
+
+## Test Classes
+
+We use **pytest** for each script.
+
+| Test file                 | What it verifies                                    |
+| ------------------------- | --------------------------------------------------- |
+| `test_load_parcels.py`    | Excel file/sheets exist; `geometry_wkt` present.    |
+| `test_load_properties.py` | CSV parsing & PostGIS write (DB calls mocked).      |
+| `test_map_viewer.py`      | Generated HTML contains expected geometries/owners. |
+
+> *Mocks are used for file I/O and database interactions when necessary.*
+
+---
+
+## Dependencies & Setup
+
+1. **Python 3.8+** recommended.
+2. Install libraries:
+
+```bash
+pip install geopandas shapely folium pandas openpyxl sqlalchemy psycopg2 pytest
+```
+
+| Package                   | Purpose                        |
+| ------------------------- | ------------------------------ |
+| `geopandas`               | Geometry & CRS transformations |
+| `shapely`                 | WKT parsing                    |
+| `folium`                  | Map generation                 |
+| `openpyxl`                | Write Excel files              |
+| `sqlalchemy` + `psycopg2` | PostGIS connectivity           |
+| `pytest`                  | Test framework                 |
+
+**File paths** – scripts expect input in `data/`. Adjust paths if your structure differs.
+
+### PostGIS (optional)
+
+Requires PostgreSQL with the **PostGIS** extension enabled. Update the connection string in `load_properties.py` if needed:
+
+```python
+create_engine("postgresql://postgres:ES2425GI@localhost:5432/postgres")
+```
+
+---
+
+## Running Tests & Coverage
+
+Run all tests:
+
+```bash
+pytest -v
+```
+
+Generate coverage (terminal):
+
+```bash
+pytest --cov=. --cov-report=term-missing --cov-branch
+```
+
+Generate HTML coverage report:
+
+```bash
+pytest --cov=. --cov-report=html
+# open htmlcov/index.html in your browser
+```
+
+---
+
+## Contributors
+
+| Name                | Student # | GitHub                                               |
+| ------------------- | --------- | ---------------------------------------------------- |
+| João Pedro Marques  | 105377    | [@joaopgamarques](https://github.com/joaopgamarques) |
+| José Mesquita       | 106281    | [@jlgmaIscte](https://github.com/jlgmaIscte)         |
+| Bárbara Albuquerque | 106807    | [@bfaae](https://github.com/bfaae)                   |
+| Jéssica Vieira      | 110812    | [@Je-ssi-ca](https://github.com/Je-ssi-ca)           |
+
+
+These Python scripts are a complementary extension to our main **Java‑based** project: *ES‑Project‑TerritoryManagement*. Feel free to open issues or submit pull requests!
